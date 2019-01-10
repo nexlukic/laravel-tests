@@ -15,7 +15,9 @@ class CityTest extends ModelTestCase
             'name',
         ]);
     }
-
+    /**
+    @test
+    **/
     public function test_streets_relation()
     {
         $m = new City();
