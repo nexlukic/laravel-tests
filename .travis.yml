@@ -1,31 +1,20 @@
-dist: trusty
-language: php
+sudo: false
+language: "php"
 
 php:
-  - 7.1
+  - 5.4
+  - 5.5
+  - 5.6
+  - 7.0
+  - hhvm
 
-services:
-  - mysql
+before_script: 
+- "composer require codeclimate/php-test-reporter --dev"
+- "composer install"
 
-before_script:
-  - bash .travis.install-mysql-5.7.sh
-  - mysql -e 'CREATE DATABASE homestead_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
-  - chmod -R 777 storage/
-  - chmod -R 777 bootstrap/cache/
-  - cp .env.travis.example .env
-  - composer install --no-interaction
-  - curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-  - sudo apt-get install -y nodejs
-  - npm install --global yarn
-  - yarn
-  - npm run production
-  - php artisan migrate --database=mysql_test
-script:
-  - vendor/bin/phpunit
-cache:
-  directories:
-    - $HOME/.yarn-cache
-    - node_modules
-    - vendor
-env:
-  - TRAVIS_NODE_VERSION="8"
+script: 
+- "phpunit --testsuite=unit --coverage-text --coverage-clover build/logs/clover.xml"
+
+after_script:
+- CODECLIMATE_REPO_TOKEN="a15196494c00cd3cda4acd68679c7197a7c8d5923dacf19d00e63876bd4eee1a" vendor/bin/test-reporter --stdout > codeclimate.json
+- "sh -c 'if [ \"$TRAVIS_PHP_VERSION\" != \"hhvm\" ]; then curl -X POST -d @codeclimate.json -H \"Content-Type: application/json\" -H \"User-Agent: Code Climate (PHP Test Reporter v0.1.1)\" https://codeclimate.com/test_reports  ; fi'"
